@@ -17,7 +17,7 @@ Multiboat minimum makespan formation planning in three stages.
 # Dependencies
 
 - Main dependency is [drake](https://github.com/RobotLocomotion/drake)
-- Install other python dependencies with `pip install sklearn tabular'
+- Install other python dependencies with `pip install sklearn tabular`
 
 
 
