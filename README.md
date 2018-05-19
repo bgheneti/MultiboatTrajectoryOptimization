@@ -3,9 +3,9 @@ Multiboat minimum makespan formation planning in three stages.
 
 - Goal assignment with the Hungarian algorithm with initial state to goal high order  norm costs
 - Linear and shape-based interpolation for trajectory initialization
-- Direct transcription trajectory optimization using pydrake and SNOPT SQP solver
+- Direct transcription trajectory optimization using pydrake with SNOPT SQP solver
 
-Final project for [6.832 - Underactuated Robotics](http://underactuated.csail.mit.edu/).
+Final project for [6.832 - Underactuated Robotics](http://underactuated.csail.mit.edu/)
 
 See Youtube for an [explanation video](https://youtu.be/kd0PPfe8hwg).
 
