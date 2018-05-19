@@ -5,6 +5,10 @@ Multiboat minimum makespan formation planning in three stages.
 - Linear and shape-based interpolation for trajectory initialization
 - Direct transcription trajectory optimization using pydrake and SNOPT SQP solver
 
+Final project for [6.832 - Underactuated Robotics](http://underactuated.csail.mit.edu/).
+
+See Youtube for an [explanation video](https://youtu.be/kd0PPfe8hwg).
+
 # Contents
 
 - `.py` files include code for the above 3 stages, as well as for producing visualizations
