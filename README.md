@@ -1,7 +1,7 @@
 # Multiboat Trajectory Optimization
 Multiboat minimum makespan formation planning in three stages.
 
-- Goal assignment with the Hungarian Hungarian algorithm.
+- Goal assignment with the Hungarian algorithm.
 - Linear and shape-based interpolation for trajectory initialization
 - Direct transcription trajectory optimization using pydrake and SNOPT SQP solver
 
