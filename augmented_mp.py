@@ -37,16 +37,18 @@ class AugmentedMathematicalProgram(MathematicalProgram):
     #constraint functions
     #####################
     
-    def add_equal_constraints(self, state, val, linear=False):
-        slack = 0.0001
-        def add_equal_constraint(x, y):
-            self.AddConstraint(x == y)
+    def pairwise_constraints(self, state, val, f):
+        return [f(x, y) for x,y in zip(state, val)] if isinstance(state, Iterable) else f(state, val)
+    
+    def add_equal_constraints(self, state, val, linear=False, slack=0.005):
+        f_nonlinear = lambda x,y: self.AddConstraint(x == y)
+        f_linear    = lambda x,y: self.AddLinearConstraint(x == y)
+        f_linear    = lambda x,y: [self.AddLinearConstraint(x >= y-slack), self.AddLinearConstraint(x <= y+slack)]
             
-        def add_equal_linear_constraint(x, y):
-            self.AddLinearConstraint(y-slack == x)
-
-        if isinstance(state, Iterable):
-            for x,y in zip(state, val):
-                add_equal_linear_constraint(x, y) if linear else add_equal_constraint(x, y)
-        else:
-            add_equal_constraint(state, val)
+        return self.pairwise_constraints(state, val, f_linear if linear else f_nonlinear)
+    
+    def add_leq_constraints(self, state, val, linear=False):
+        f_nonlinear = lambda x,y: self.AddConstraint(x <= y)
+        f_linear    = lambda x,y: self.AddLinearConstraint(x <= y)
+            
+        return self.pairwise_constraints(state, val, f_linear if linear else f_nonlinear)

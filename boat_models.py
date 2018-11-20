@@ -21,7 +21,8 @@ class Boat():
     Q0 = 50
     Q1 = 50
     Q2 = 5
-    max_u = 4    
+    max_u = 4
+    linear=False
     
     def __init__(self, split=False, min_interboat_clearance=0):
         self.split = split
@@ -366,7 +367,7 @@ class Boat():
                 for t in range(len(boats_S[0])):
                     mp.AddQuadraticCost(np.sum((boats_S[i,t]-boats_S[j,t]-final_state_dif)**2))
                         
-class threeInputBoat(Boat):
+class ThreeInputBoat(Boat):
     num_inputs = 3
     max_u = 6
     
@@ -383,7 +384,7 @@ class threeInputBoat(Boat):
         derivs[5] = -cls.d33 / cls.m33 * s[5] + cls.width / (2 * cls.m33) * u[2];
         return derivs
 
-class twoInputBoat(Boat):
+class TwoInputBoat(Boat):
     num_inputs = 2
     num_states = 4
     max_u = 6

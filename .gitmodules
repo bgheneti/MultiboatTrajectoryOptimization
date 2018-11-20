@@ -1,0 +1,3 @@
+[submodule "icp"]
+	path = icp
+	url = git://github.com/ClayFlannigan/icp
