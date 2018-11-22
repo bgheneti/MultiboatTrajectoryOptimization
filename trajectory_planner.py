@@ -143,7 +143,6 @@ class BoatConfigurationPlanning(object):
         mp = AugmentedMathematicalProgram()
                            
         num_boats = state_initial.shape[0]
-        print num_boats
         
         #initialize time variables
         
@@ -184,18 +183,14 @@ class BoatConfigurationPlanning(object):
         M = 0.5 * np.array([[1, 1, 0],[-2, 2, 0],[1, -2, 1]])
         arr = np.array([[0, 0, 2]])
         #print arr.T.dot(arr)
-        print step
+        
         Q  = arr.T.dot(arr)
-        
-        print M
         deriv_mat = M.T.dot(Q.dot(M))
-        
-        print Q
-        
+                
         #print Q
         #print M
         #print deriv_mat
-
+        
         
         #Costs
         ######
@@ -251,3 +246,35 @@ class BoatConfigurationPlanning(object):
         boats_S = self.boat.toGlobalStates(np.array([mp.GetSolution(S) for S in boats_S]), state_initial)
         
         return boats_S, boats_U, time_array[-1], mp, result, solve_time
+    
+def B_i_k(x, i, k):
+    if k==0:
+        return 1. if i<=x<i+1 else 0.
+    
+    return ((x-i)*B_i_k(x, i, k-1) + ((i+k+1)-x)*B_i_k(x, i+1, k-1))/k
+    
+def knots_to_trajectory(boats_S, N, order=3):
+    boats_S_sample = np.zeros((boats_S.shape[0],boats_S.shape[1]+2*(order-1),boats_S.shape[2]))
+    boats_S_sample[:,order:-order] = boats_S[:,1:-1]
+    boats_S_sample[:,:order] = boats_S[:,0,:]
+    boats_S_sample[:,-order:] = boats_S[:,-1,:]
+        
+    shape = boats_S_sample.shape
+    num_knots = shape[1]
+    
+    dN = (N-1)/float(num_knots-3)
+
+    assert dN.is_integer(), "%f is not an integer" % dN
+    
+    new_boats_S = np.zeros((shape[0],N,shape[2]))
+
+    #b_x = np.zeros(N)
+        
+    for b in range(shape[0]):
+        for x in range(0,N):            
+            for i in range(int(x/dN), min(int(x/dN)+4,num_knots)):
+                new_boats_S[b,x] += B_i_k(float(x)/dN, i-3, 3)*boats_S_sample[b,i]
+                #b_x[x] += B_i_k(float(x)/dN, i-3, 3)
+
+    #print b_x
+    return new_boats_S
