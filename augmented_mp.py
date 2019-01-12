@@ -40,7 +40,7 @@ class AugmentedMathematicalProgram(MathematicalProgram):
     def pairwise_constraints(self, state, val, f):
         return [f(x, y) for x,y in zip(state, val)] if isinstance(state, Iterable) else f(state, val)
     
-    def add_equal_constraints(self, state, val, linear=False, slack=0.005):
+    def add_equal_constraints(self, state, val, linear=False, slack=0.):
         f_nonlinear = lambda x,y: self.AddConstraint(x == y)
         f_linear    = lambda x,y: self.AddLinearConstraint(x == y)
         f_linear    = lambda x,y: [self.AddLinearConstraint(x >= y-slack), self.AddLinearConstraint(x <= y+slack)]

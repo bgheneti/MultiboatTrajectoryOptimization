@@ -62,7 +62,7 @@ class BoatConfigurationPlanning(object):
         print '%f seconds' % (time.time()-start)
 
 
-        #Costs
+        #Costst
         ######
         
         print bold('ADDING COSTS')
@@ -118,15 +118,15 @@ class BoatConfigurationPlanning(object):
         solve_time = time.time()-start
         print '%f seconds' % (solve_time)
         print
-        
+
         boats_U = np.array([mp.GetSolution(U) for U in boats_U])
         boats_S = self.boat.toGlobalStates(np.array([mp.GetSolution(S) for S in boats_S]), state_initial)
         if time_cost:
             time_array = np.array([x.Evaluate({finish_time: mp.GetSolution(finish_time)}) for x in time_array])
-        
+
         return boats_S, boats_U, time_array[-1], mp, result, solve_time
-    
-    
+
+
     def compute_spline_trajectory(self, minimum_time, maximum_time, state_initial, state_final, input_cost=False, dif_states_cost=False, states_initialization=None, step_initialization=None,N=100, slack=1e-3):
         
         start = time.time()
@@ -148,31 +148,25 @@ class BoatConfigurationPlanning(object):
         
         finish_time = maximum_time
         step = finish_time/float(N)
-        
+
         if step_initialization is not None:
             mp.SetInitialGuess(finish_time, step_initialization*N)     
-            
+
         time_array = np.arange(0.0, N+1)*step
-        
+
         #initialize state variables
-        
+
         problem_state_initial = self.boat.toProblemState(state_initial)
         problem_state_final  = self.boat.toProblemState(state_final)
-                    
+        
         boats_S = mp.states(N+1, problem_state_initial, states_final=problem_state_final)        
         boats_U = mp.inputs(N, self.boat.num_inputs, num_boats=num_boats)
-        '''
-        for b in range(num_boats):
-            for i in range(1,3):
-                mp.add_equal_constraints(boats_S[b,i], problem_state_initial[b])
-            for i in range(-2,-5,-1):
-                mp.add_equal_constraints(boats_S[b,i], problem_state_final[b])             '''   
         
         if states_initialization is not None:
             problem_states_initialization = self.boat.toProblemStates(states_initialization)
             for i in range(num_boats):
                 mp.SetInitialGuess(boats_S[i], problem_states_initialization[i])
-                
+
         print bold('INITIALIZED %d %s boats') % (num_boats, self.boat.__class__.__name__) +'\nboats_S:%s, boats_U:%s, time_array:%s' % (boats_S.shape, boats_U.shape, time_array.shape)
         print 'Number of decision vars', mp.num_vars()        
         print '%f seconds' % (time.time()-start)
@@ -181,17 +175,10 @@ class BoatConfigurationPlanning(object):
         ##Calculate Quadratic B-Spline Parameters
         
         M = 0.5 * np.array([[1, 1, 0],[-2, 2, 0],[1, -2, 1]])
-        arr = np.array([[0, 0, 2]])
-        #print arr.T.dot(arr)
-        
+        arr = np.array([[0, 0, 2]])        
         Q  = arr.T.dot(arr)
         deriv_mat = M.T.dot(Q.dot(M))
-                
-        #print Q
-        #print M
-        #print deriv_mat
-        
-        
+
         #Costs
         ######
         
@@ -200,19 +187,19 @@ class BoatConfigurationPlanning(object):
         start=time.time()
         
         if input_cost:
-            for b in range(num_boats):
-                for k in range(-1,N+2):
-                    P = np.zeros((3,2),boats_S.dtype)
-                    if k<1:
-                        P[0] = P[1] = boats_S[b,0,:2]
-                        P[2]        = boats_S[b,k+1,:2]
-                    elif k>N-1:
-                        P[0]        = boats_S[b,k-1,:2] 
-                        P[1] = P[2] = boats_S[b,N,:2]
-                    else:
-                        P=boats_S[b,k-1:k+2,:2]
-                                            
-                    mp.AddQuadraticCost(np.sum(np.multiply(deriv_mat.dot(P),P)))
+            for k in range(-1,N+2):
+                P = np.zeros((3,2),boats_S.dtype)
+                if k<1:
+                    P[0] = P[1] = boats_S[0,0,:2]
+                    P[2]        = boats_S[0,k+1,:2]
+                elif k>N-1:
+                    P[0]        = boats_S[0,k-1,:2] 
+                    P[1] = P[2] = boats_S[0,N,:2]
+                else:
+                    P=boats_S[0,k-1:k+2,:2]
+                print "SHAPE", deriv_mat.dot(P).shape
+                mp.AddQuadraticCost(np.sum(np.multiply(deriv_mat.dot(P),P)))
+            #mp.AddQuadraticCost(np.sum(boats_S[0,:,6:]**2/1000))
                                 
         print '%f seconds' % (time.time()-start)
 
@@ -220,15 +207,23 @@ class BoatConfigurationPlanning(object):
         #Constraints
         ############
         
-        print bold('ADDING CONSTRAINTS')
-        print self.boat.linear
-        
+        print bold('ADDING CONSTRAINTS')        
         start=time.time()
 
         self.boat.add_collision_constraints(mp, boats_S)
+        
+        angle_mod = mp.NewBinaryVariables(N, 2, "angle_mod")
+        self.boat.angle_mod = angle_mod
+        mp.add_leq_constraints(angle_mod[:,0]+angle_mod[:,1],np.ones(N))
+        
+        #angular velocity update
+        mp.add_equal_constraints(boats_S[0,1:,5],boats_S[0,:-1,5]+.50*boats_S[0,:-1,6]+.50*boats_S[0,:-1,7],linear=True)
+        
+        #angle update
+        mp.add_equal_constraints(boats_S[0,1:,2],boats_S[0,:-1,2]+(angle_mod[:,0]-angle_mod[:,1])*360+\
+                                 boats_S[0,:-1,5]+.375*boats_S[0,:-1,6]+.125*boats_S[0,:-1,7],linear=True)
 
         print '%f seconds' % (time.time()-start)
-        
                 
         #Calculate Solution 
         ###################
@@ -277,4 +272,35 @@ def knots_to_trajectory(boats_S, N, order=3):
                 #b_x[x] += B_i_k(float(x)/dN, i-3, 3)
 
     #print b_x
+    return new_boats_S
+
+def knots_to_trajectory2(boats_S, N, order=3):
+    boats_S_sample = np.zeros((boats_S.shape[0],boats_S.shape[1]+2*(order-1),boats_S.shape[2]))
+    boats_S_sample[:,order:-order] = boats_S[:,1:-1]
+    boats_S_sample[:,:order] = boats_S[:,0,:]
+    boats_S_sample[:,-order:] = boats_S[:,-1,:]
+        
+    shape = boats_S_sample.shape
+    num_knots = shape[1]
+    
+    #number of trajectory per knot interval
+    dN = (N-1)/float(num_knots-3)
+
+    assert dN.is_integer(), "%f is not an integer" % dN
+    
+    new_boats_S = np.zeros((shape[0],N,shape[2]))
+    M = 0.5 * np.array([[1, 1, 0],[-2, 2, 0],[1, -2, 1]])
+                    
+    for b in range(shape[0]):
+        for x in range(0,N): 
+            knot_ind = int(x/dN)
+            knot_fraction = x/dN-knot_ind
+            p = boats_S_sample[b,knot_ind:knot_ind+3,:2]
+            B = np.array([1, knot_fraction, knot_fraction**2]).dot(M)
+            #print B
+            dB_dt = np.array([0, 1, 2*knot_fraction]).dot(M)/dN
+            
+            new_boats_S[b,x,:2] = B.dot(p)
+            new_boats_S[b,x,3:5] =dB_dt.dot(p)
+            
     return new_boats_S
