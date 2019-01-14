@@ -20,7 +20,6 @@ class BoatConfigurationPlanning(object):
         
         assert state_initial.shape==state_final.shape   # Same number of boats, state vars for final and initial states
         
-        
         #Initialize Optimization Variables
         ##################################       
         
@@ -258,31 +257,3 @@ def write_experiment(boat, boats_S, boats_U, label):
     with open('results/path_'+label+'.pickle', 'wb') as f:
         pickle.dump([boat,boats_S,boats_U], f)
     
-def knots_to_trajectory(boats_S, dN, order=3):
-    boats_S_sample = np.zeros((boats_S.shape[0],boats_S.shape[1]+2*(order-1),boats_S.shape[2]))
-    boats_S_sample[:,order:-order] = boats_S[:,1:-1]
-    boats_S_sample[:,:order] = boats_S[:,0,:]
-    boats_S_sample[:,-order:] = boats_S[:,-1,:]
-        
-    shape = boats_S_sample.shape
-    num_knots = shape[1]
-    
-    #number of knots
-    N = dN*(num_knots-3)+1
-    
-    new_boats_S = np.zeros((shape[0],N,shape[2]))
-    M = 0.5 * np.array([[1, 1, 0],[-2, 2, 0],[1, -2, 1]])
-                    
-    for b in range(shape[0]):
-        for x in range(0,N): 
-            knot_ind = int(x/dN)
-            knot_fraction = x/float(dN)-knot_ind
-            p = boats_S_sample[b,knot_ind:knot_ind+3,:2]
-            B = np.array([1, knot_fraction, knot_fraction**2]).dot(M)
-            #print B
-            dB_dt = np.array([0, 1, 2*knot_fraction]).dot(M)/dN
-            
-            new_boats_S[b,x,:2] = B.dot(p)
-            new_boats_S[b,x,3:5] =dB_dt.dot(p)
-            
-    return new_boats_S
