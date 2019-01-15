@@ -127,7 +127,7 @@ class BoatConfigurationPlanning(object):
 
 
     def compute_spline_trajectory(self, minimum_time, maximum_time, state_initial, state_final, input_position_cost=False, input_angle_cost=False, dif_states_cost=False, states_initialization=None, step_initialization=None, fix_initialization_inds=None, in_hull=None, on_edge=None, N=100, slack=1e-3):
-        
+                
         start = time.time()
         
         #Check variable dimensions
@@ -153,7 +153,7 @@ class BoatConfigurationPlanning(object):
         #initialize state variables
 
         problem_state_initial = self.boat.toProblemState(state_initial)
-        problem_state_final  = self.boat.toProblemState(state_final)
+        problem_state_final   = self.boat.toProblemState(state_final)
         
         boats_S = mp.states(N+1, problem_state_initial, states_final=problem_state_final)        
         boats_U = mp.inputs(N, self.boat.num_inputs, num_boats=num_boats)
@@ -194,20 +194,21 @@ class BoatConfigurationPlanning(object):
         start=time.time()
         
         if input_position_cost:
-            for k in range(-1,N+2):
+            for k in range(T):
                 P = np.zeros((3,2),boats_S.dtype)
-                if k<1:
+                if k==0:
                     P[0] = P[1] = boats_S[0,0,:2]
-                    P[2]        = boats_S[0,k+1,:2]
+                    P[2] = boats_S[0,k+1,:2]
                 elif k>N-1:
-                    P[0]        = boats_S[0,k-1,:2] 
+                    P[0] = boats_S[0,k-1,:2]
                     P[1] = P[2] = boats_S[0,N,:2]
                 else:
                     P=boats_S[0,k-1:k+2,:2]
+                print P
                 mp.AddQuadraticCost(np.sum(np.multiply(deriv_mat.dot(P),P)))
                 
         if input_angle_cost:
-            mp.AddQuadraticCost(np.sum(boats_S[0,:,6:]**2/1000))
+            mp.AddQuadraticCost(np.sum(boats_U[0,:,2:]**2/1000))
                                 
         print '%f seconds' % (time.time()-start)
         
@@ -224,11 +225,11 @@ class BoatConfigurationPlanning(object):
         mp.add_leq_constraints(angle_mod[:,0]+angle_mod[:,1],np.ones(N))
         
         #angular velocity update
-        mp.add_equal_constraints(boats_S[0,1:,5],boats_S[0,:-1,5]+.50*boats_S[0,:-1,6]+.50*boats_S[0,:-1,7],linear=True)
+        mp.add_equal_constraints(boats_S[0,1:,5],boats_S[0,:-1,5]+.50*boats_U[0,:,2]+.50*boats_U[0,:,3],linear=True)
         
         #angle update
         mp.add_equal_constraints(boats_S[0,1:,2],boats_S[0,:-1,2]+(angle_mod[:,0]-angle_mod[:,1])*360+\
-                                 boats_S[0,:-1,5]+.375*boats_S[0,:-1,6]+.125*boats_S[0,:-1,7],linear=True)
+                                 boats_S[0,:-1,5]+.375*boats_U[0,:,2]+.125*boats_U[0,:,3],linear=True)
 
         print '%f seconds' % (time.time()-start)
                 
@@ -246,10 +247,10 @@ class BoatConfigurationPlanning(object):
         
         boats_U = np.array([mp.GetSolution(U) for U in boats_U])
         boats_S = self.boat.toGlobalStates(np.array([mp.GetSolution(S) for S in boats_S]), state_initial)
-        
+                
         if opt_hull:
-            in_hull = mp.GetSolution(in_hull)
-            on_edge = mp.GetSolution(on_edge)
+            in_hull = mp.GetSolution(in_hull).reshape(in_hull.shape)
+            on_edge = mp.GetSolution(on_edge).reshape(on_edge.shape)
         
         return boats_S, boats_U, in_hull, on_edge, mp, result, solve_time
 
