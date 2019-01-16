@@ -126,7 +126,7 @@ class BoatConfigurationPlanning(object):
         return boats_S, boats_U, time_array[-1], mp, result, solve_time
 
 
-    def compute_spline_trajectory(self, S_initial, S_final, opt_position=True, opt_angle=True, S_initialization=None, in_hull=None, on_edge=None, S_fix_inds=None, N=15):
+    def compute_spline_trajectory(self, S_initial, S_final, opt_position=True, opt_angle=True, S_initialization=None, in_hull=None, S_fix_inds=None, N=15):
                 
         start = time.time()
         
@@ -157,10 +157,9 @@ class BoatConfigurationPlanning(object):
                 mp.fix_initialization(boats_S, problem_S_initialization, S_fix_inds)
         
         # integer variables
-        opt_hull = in_hull is None or on_edge is None
+        opt_hull = in_hull is None
         if opt_hull:
             in_hull  = mp.NewBinaryVariables(T-1, len(self.boat.hull_path), "hull")
-            on_edge  = mp.NewBinaryVariables(T-2, "edge")
             
             mp.add_equal_constraints(np.sum(in_hull, axis=1), np.ones(in_hull.shape[0]))
             
@@ -196,7 +195,7 @@ class BoatConfigurationPlanning(object):
         start=time.time()
         
         if opt_position:
-            self.boat.add_position_collision_constraints(boats_S, in_hull, on_edge, mp)
+            self.boat.add_position_collision_constraints(boats_S, in_hull, mp)
 
         if opt_angle:
             self.boat.add_angle_collision_constraints(boats_S, in_hull, mp)
@@ -205,7 +204,7 @@ class BoatConfigurationPlanning(object):
             self.boat.add_transition_constraints(boats_S, boats_U, angle_mod, mp)
 
         if opt_hull:
-            self.boat.add_integer_constraints(in_hull, on_edge, angle_mod, mp)
+            self.boat.add_integer_constraints(in_hull, mp)
             
         print 'Number of constraints', len(mp.linear_constraints())                      
         print '%f seconds' % (time.time()-start)
@@ -229,9 +228,8 @@ class BoatConfigurationPlanning(object):
                 
         if opt_hull:
             in_hull = mp.GetSolution(in_hull).reshape(in_hull.shape)
-            on_edge = mp.GetSolution(on_edge).reshape(on_edge.shape)
         
-        return boats_S, boats_U, in_hull, on_edge, mp, result, solve_time
+        return boats_S, boats_U, in_hull, mp, result, solve_time
 
 def write_experiment(boat, boats_S, boats_U, label):
     with open('results/path_'+label+'.pickle', 'wb') as f:
