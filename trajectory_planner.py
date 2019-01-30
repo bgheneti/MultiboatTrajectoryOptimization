@@ -218,11 +218,12 @@ class BoatConfigurationPlanning(object):
         start=time.time()
         
         if opt_position:
-            self.boat.add_position_collision_constraints(boats_S, in_hull, mp)
+            self.boat.add_position_collision_constraints(boats_S, in_hull, opt_hull, mp)
 
         if opt_angle:
-            self.boat.add_angle_collision_constraints(boats_S, in_hull, mp)
-
+            self.boat.add_angle_collision_constraints(boats_S, in_hull, opt_hull, mp)
+        
+        print S_fix_inds
         self.boat.add_transition_constraints(boats_S, boats_U, angle_mod, mp, S_fix_inds)
 
         if opt_hull:
@@ -242,14 +243,15 @@ class BoatConfigurationPlanning(object):
         solve_time = time.time()-start
         
         print result
-        print '%f seconds' % (solve_time)
+        print "Solver: %s" % mp.GetSolverId().name()
+        print '%f seconds' % solve_time
         print
         
         boats_U = np.array([mp.GetSolution(U) for U in boats_U])
         boats_S = self.boat.toGlobalStates(np.array([mp.GetSolution(S) for S in boats_S]), S_initial)
                 
         if opt_hull:
-            in_hull = mp.GetSolution(in_hull).reshape(in_hull.shape)
+            in_hull = np.array(mp.GetSolution(in_hull).reshape(in_hull.shape), dtype=int)
         
         return boats_S, boats_U, in_hull, mp, result, solve_time
 

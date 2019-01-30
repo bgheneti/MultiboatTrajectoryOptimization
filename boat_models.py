@@ -23,6 +23,8 @@ class Boat():
     Q2 = 5
     max_u = 4
     linear=False
+    split=False
+    min_interboat_distance = (height**2+width**2)**0.5
     
     def __init__(self, split=False, min_interboat_clearance=0):
         self.split = split
@@ -191,14 +193,18 @@ class Boat():
         if plot is None:
             plt.show()
             
-    def plot_configurations(self, boats_S, stride=10):
-        plot = plt.subplots(nrows=1,ncols=1, figsize=(12,8))
+    def plot_configurations(self, boats_S, stride=10, boat_color='black',edge_color=None,edge_width=None, plot=None):
+        if plot is None:
+            plot1 = plt.subplots(nrows=1,ncols=1, figsize=(12,8))
+        else:
+            plot1 = plot
         pick = range(0,boats_S.shape[1],stride)
         num_display = len(pick)
-        alphas = np.repeat(np.arange(0,num_display)/float(num_display), len(boats_S))*0.5
-        self.plot_configuration(np.vstack([boats_S[:,i,:] for i in pick]), border=0, region_fill=False, boat_color='black', alphas=alphas, plot=plot)
-        self.plot_configuration(boats_S[:,-1,:],region_fill=False, border=0, plot=plot, boat_color='black')
-        plt.plot()
+        alphas = np.repeat(np.arange(0,num_display)/float(num_display), len(boats_S))*0.25
+        self.plot_configuration(np.vstack([boats_S[:,i,:] for i in pick]), border=0, show_regions=False, boat_color=boat_color, alphas=alphas, plot=plot1)
+        self.plot_configuration(boats_S[:,-1,:],show_regions=False, border=0, plot=plot1, boat_color=boat_color,edge_color=edge_color,edge_width=edge_width)
+        if plot is None:
+            plt.plot()
         
     def plot_x0xN(self, boats_S, alpha0=[0.5], alphaN=[1], plot=None, boat_color0='w', boat_colorN='darkorange', region_color0='0.5', region_colorN='0.2'):
         if plot is None:
@@ -211,7 +217,7 @@ class Boat():
             plt.plot()
         return fig, axs
 
-    def plot_configuration(self, boats_s, alphas=None, show_regions=True, plot=None, region_color='0.2', boat_color='darkorange', border=None, region_fill=True):
+    def plot_configuration(self, boats_s, alphas=None, show_regions=True, plot=None, region_color='0.2', boat_color='darkorange', border=None, region_fill=True, edge_color=None, edge_width=None):
         if plot is None:
             fig, axs = plt.subplots(nrows=1,ncols=1, figsize=(24,16))        
             split = self.split
@@ -258,7 +264,9 @@ class Boat():
                     self.height,
                     pose[2],
                     alpha=alpha,
-                    color=boat_color
+                    facecolor=boat_color,
+                    edgecolor=edge_color,
+                    linewidth=edge_width
                 )
             )
             axs.add_patch(patches[-1])
@@ -309,7 +317,7 @@ class Boat():
                 px,py,ptheta = patch_pose(pose)
                 patch.set_x(px)
                 patch.set_y(py)
-                patch._angle = ptheta
+                patch.angle = ptheta
                 
                 if show_regions:
                     region = regions[p]

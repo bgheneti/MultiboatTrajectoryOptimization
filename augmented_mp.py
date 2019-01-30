@@ -52,7 +52,7 @@ class AugmentedMathematicalProgram(MathematicalProgram):
     def add_equal_constraints(self, state, val, linear=False, slack=0.):
         f_nonlinear = lambda x,y: self.AddConstraint(x == y)
         f_linear    = lambda x,y: self.AddLinearConstraint(x == y)
-        f_linear    = lambda x,y: [self.AddLinearConstraint(x >= y-slack), self.AddLinearConstraint(x <= y+slack)]
+        #f_linear    = lambda x,y: [self.AddLinearConstraint(x >= y-slack), self.AddLinearConstraint(x <= y+slack)]
             
         return self.pairwise_constraints(state, val, f_linear if linear else f_nonlinear)
     
