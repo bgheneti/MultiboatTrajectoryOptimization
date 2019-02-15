@@ -206,13 +206,13 @@ class Boat():
         if plot is None:
             plt.plot()
         
-    def plot_x0xN(self, boats_S, alpha0=[0.5], alphaN=[1], plot=None, boat_color0='w', boat_colorN='darkorange', region_color0='0.5', region_colorN='0.2'):
+    def plot_x0xN(self, boats_S, alpha0=[0.5], alphaN=[1], plot=None, boat_color0='w', boat_colorN='darkorange', region_color0='0.5', region_colorN='0.2', show_regions=True):
         if plot is None:
             fig, axs = plt.subplots(nrows=1,ncols=1, figsize=(12,8))
         else:
             fig, axs = plot
-        self.plot_configuration(boats_S[:,0], alphas=alpha0, plot=(fig,axs), region_color=region_color0, boat_color=boat_color0)
-        self.plot_configuration(boats_S[:,-1], alphas=alphaN, plot=(fig,axs), region_color=region_colorN, boat_color=boat_colorN)
+        self.plot_configuration(boats_S[:,0], alphas=alpha0, plot=(fig,axs), region_color=region_color0, boat_color=boat_color0, show_regions=show_regions)
+        self.plot_configuration(boats_S[:,-1], alphas=alphaN, plot=(fig,axs), region_color=region_colorN, boat_color=boat_colorN, show_regions=show_regions)
         if plot is None:
             plt.plot()
         return fig, axs
@@ -294,7 +294,6 @@ class Boat():
         return fig, axs
 
     def plot_animation(self, boats_S, input_trajectories=None, show_regions=True):
-        
         split = self.split
                 
         def patch_pose(pose):
@@ -337,10 +336,10 @@ class Boat():
         
         axs.axis('off')
         
-        self.plot_x0xN(boats_S, [0.2], [0.2], plot=(fig, axs), boat_colorN='w', region_colorN='darkorange')
+        self.plot_x0xN(boats_S, [0.2], [0.2], plot=(fig, axs), boat_colorN='w', region_colorN='darkorange', show_regions=show_regions)
         
         axs.set_aspect('equal')
-        patches, regions = self.plot_configuration(boats_S[:,0], plot=(fig,axs), boat_color='darkorange', border=1, region_color='0.2')
+        patches, regions = self.plot_configuration(boats_S[:,0], plot=(fig,axs), boat_color='darkorange', border=1, region_color='0.2', show_regions=show_regions)
         plt.xlim(np.min(boats_S[:,:,0])-self.width, np.max(boats_S[:,:,0])+self.width)
         plt.ylim(np.min(boats_S[:,:,1])-self.width, np.max(boats_S[:,:,1])+self.width)
         ani = animation.FuncAnimation(fig, animate, frames=range(boats_S.shape[1]), blit=True, interval=20)
