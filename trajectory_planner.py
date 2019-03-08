@@ -217,6 +217,9 @@ class BoatConfigurationPlanning(object):
         print bold('ADDING CONSTRAINTS')        
         start=time.time()
         
+        if opt_hull:
+            self.boat.add_integer_constraints(in_hull, mp)
+        
         if opt_position:
             self.boat.add_position_collision_constraints(boats_S, in_hull, opt_hull, mp)
 
@@ -225,9 +228,6 @@ class BoatConfigurationPlanning(object):
         
         print S_fix_inds
         self.boat.add_transition_constraints(boats_S, boats_U, angle_mod, mp, S_fix_inds)
-
-        if opt_hull:
-            self.boat.add_integer_constraints(in_hull, mp)
             
         print 'Number of constraints', len(mp.linear_constraints())                      
         print '%f seconds' % (time.time()-start)

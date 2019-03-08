@@ -246,7 +246,7 @@ class Boat():
         regions = []
         for pose,alpha in zip(boats_s,alphas):
             if show_regions:
-                if self.split:         
+                if self.split:      
                     regions.append([Circle(pose[:3], self.split_min_interboat_distance/2, color=region_color, alpha=alpha),
                                     Circle(pose[:3], self.split_min_interboat_distance/2, color=region_color, alpha=alpha)
                                    ])
