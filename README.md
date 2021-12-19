@@ -1,9 +1,9 @@
 # Multiboat Trajectory Optimization
 
-### shapeshifting branch
+## shapeshifting branch
 
-Trajectory Planning for the Shapeshifting of Autonomous Surface Vessels
-Gheneti, Banti; Park, Shinkyu; Kelly, Ryan; Meyers, Drew; Leoni, Pietro; Ratti, Carlo; Rus, Daniela L
+### Trajectory Planning for the Shapeshifting of Autonomous Surface Vessels
+#### Gheneti, Banti; Park, Shinkyu; Kelly, Ryan; Meyers, Drew; Leoni, Pietro; Ratti, Carlo; Rus, Daniela L
 
 - c-space computation for a vessel made of rectangles moving around another vessel made of rectangles, using shapely
 - trajectory optimization algorithm for solving collision free trajectories to shapeshift in the c-space, using pydrake
@@ -11,7 +11,7 @@ Gheneti, Banti; Park, Shinkyu; Kelly, Ryan; Meyers, Drew; Leoni, Pietro; Ratti, 
 
 paper presented at IEEE-MRS 2019 and accesible [here](https://dspace.mit.edu/handle/1721.1/137050)
 
-### master branch
+## master branch
 
 Multiboat minimum makespan formation planning in three stages.
 
