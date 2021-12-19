@@ -9,7 +9,8 @@
 - trajectory optimization algorithm for solving collision free trajectories to shapeshift in the c-space, using pydrake
 - also includes features in the master branch described below
 
-paper presented at IEEE-MRS 2019 and accesible [here](https://dspace.mit.edu/handle/1721.1/137050)
+[paper presented at IEEE-MRS 2019](https://dspace.mit.edu/handle/1721.1/137050)
+[demo video](https://www.youtube.com/watch?v=9JNuBHQdF0U)
 
 ## master branch
 
