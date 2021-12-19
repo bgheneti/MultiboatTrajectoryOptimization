@@ -10,10 +10,8 @@
 - also includes features in the master branch described below
 
 presented at the International Symposium on Multi-Robot and Multi-Agent Systems (IEEE-MRS 2019)
-
-[demo video](https://www.youtube.com/watch?v=9JNuBHQdF0U)
-
-[paper link](https://dspace.mit.edu/handle/1721.1/137050)
+- [demo video](https://www.youtube.com/watch?v=9JNuBHQdF0U)
+- [paper link](https://dspace.mit.edu/handle/1721.1/137050)
 
 
 ## master branch
