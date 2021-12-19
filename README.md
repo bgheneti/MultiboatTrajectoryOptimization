@@ -9,9 +9,9 @@
 - trajectory optimization algorithm for solving collision free trajectories to shapeshift in the c-space, using pydrake
 - also includes features in the master branch described below
 
-[paper presented at the International Symposium on Multi-Robot and Multi-Agent Systems](https://dspace.mit.edu/handle/1721.1/137050)
-
 [demo video](https://www.youtube.com/watch?v=9JNuBHQdF0U)
+presented at the International Symposium on Multi-Robot and Multi-Agent Systems: [paper link](https://dspace.mit.edu/handle/1721.1/137050)
+
 
 ## master branch
 
